@@ -40,9 +40,9 @@
      extern __shared__ uint2 shared_mem[];
      const int s0 = (Ncol * (row - BUF_COUNT) + col) * memshift;
 
-	res[0] = shared_mem[((s0 + 0) * 16 + threadIdx.y) * 4 + threadIdx.x];
-	res[1] = shared_mem[((s0 + 1) * 16 + threadIdx.y) * 4 + threadIdx.x];
-	res[2] = shared_mem[((s0 + 2) * 16 + threadIdx.y) * 4 + threadIdx.x];
+	res[0] = shared_mem[((s0 + 0) * 8 + threadIdx.y) * 4 + threadIdx.x];
+	res[1] = shared_mem[((s0 + 1) * 8 + threadIdx.y) * 4 + threadIdx.x];
+	res[2] = shared_mem[((s0 + 2) * 8 + threadIdx.y) * 4 + threadIdx.x];
  }
  
  __device__ __forceinline__ void ST4SS(const int row, const int col, const uint2 data[3], const int thread, const int threads)
@@ -50,10 +50,9 @@
      extern __shared__ uint2 shared_mem[];
      const int s0 = (Ncol * (row - BUF_COUNT) + col) * memshift;
  
-     shared_mem[((s0 + 0) * 16 + threadIdx.y) * 4 + threadIdx.x] = data[0];
-	 shared_mem[((s0 + 1) * 16 + threadIdx.y) * 4 + threadIdx.x] = data[1];
-	 shared_mem[((s0 + 2) * 16 + threadIdx.y) * 4 + threadIdx.x] = data[2];
-     __syncthreads();
+     shared_mem[((s0 + 0) * 8 + threadIdx.y) * 4 + threadIdx.x] = data[0];
+	 shared_mem[((s0 + 1) * 8 + threadIdx.y) * 4 + threadIdx.x] = data[1];
+	 shared_mem[((s0 + 2) * 8 + threadIdx.y) * 4 + threadIdx.x] = data[2];
  }
 
  
@@ -606,8 +605,8 @@ void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounc
 	else if (cuda_arch[dev_id] >= 500) tpb = TPB50;
 	else if (cuda_arch[dev_id] >= 200) tpb = TPB20;
 
-	dim3 grid1((threads * 4 + 64 - 1) / 64);
-	dim3 block1(4, 64 >> 2);
+	dim3 grid1((threads * 4 + 32 - 1) / 32);
+	dim3 block1(4, 32 >> 2);
 
 	dim3 grid2((threads + 64 - 1) / 64);
 	dim3 block2(64);
@@ -619,7 +618,7 @@ void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounc
 	{
 		lyra2_gpu_hash_32_1 <<< grid2, block2 >>> (threads, startNounce, (uint2*)d_hash);
 
-		    lyra2_gpu_hash_32_2 <<< grid1, block1, 24 * (8 - 0) * sizeof(uint2) * 64 >>> (threads, startNounce, d_hash);
+		    lyra2_gpu_hash_32_2 <<< grid1, block1, 24 * (8 - 0) * sizeof(uint2) * 32 >>> (threads, startNounce, d_hash);
 
 		lyra2_gpu_hash_32_3 <<< grid2, block2 >>> (threads, startNounce, (uint2*)d_hash);
 	}
