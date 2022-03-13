@@ -50,13 +50,6 @@ __constant__ uint32_t c_SCRATCH_WU_PER_WARP_1; // (SCRATCH * WU_PER_WARP)-1
 
 template <int ALGO> __device__  __forceinline__ void block_mixer(uint4 &b, uint4 &bx, const int x1, const int x2, const int x3);
 
-static __host__ __device__ uint4& operator ^= (uint4& left, const uint4& right) {
-	left.x ^= right.x;
-	left.y ^= right.y;
-	left.z ^= right.z;
-	left.w ^= right.w;
-	return left;
-}
 
 static __host__ __device__ uint4& operator += (uint4& left, const uint4& right) {
 	left.x += right.x;
@@ -416,7 +409,8 @@ void salsa_xor_core(uint4 &b, uint4 &bx, const int x1, const int x2, const int x
 __device__  __forceinline__
 void chacha_xor_core(uint4 &b, uint4 &bx, const int x1, const int x2, const int x3)
 {
-	uint4 x = b ^= bx;
+	b ^= bx;
+	uint4 x = b;
 
 	//b ^= bx;
 	//x = b;

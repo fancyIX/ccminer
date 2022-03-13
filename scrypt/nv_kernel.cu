@@ -168,14 +168,6 @@ bool NVKernel::run_kernel(dim3 grid, dim3 threads, int WARPS_PER_BLOCK, int thr_
 	return success;
 }
 
-static __device__ uint4& operator^=(uint4& left, const uint4& right)
-{
-	left.x ^= right.x;
-	left.y ^= right.y;
-	left.z ^= right.z;
-	left.w ^= right.w;
-	return left;
-}
 
 __device__ __forceinline__ uint4 shfl4(const uint4 val, unsigned int lane, unsigned int width)
 {

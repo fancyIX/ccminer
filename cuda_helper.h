@@ -66,6 +66,32 @@ extern const uint3 threadIdx;
 // #define SPH_T64(x) ((x) & SPH_C64(0xFFFFFFFFFFFFFFFF))
 #endif
 
+static __device__ __forceinline__ int SHFL(int var, int src, int width = 32)
+{
+#if defined __CUDA_ARCH__ && __CUDA_ARCH__ >= 300
+#if CUDART_VERSION >= 9010
+	return __shfl_sync(0xffffffff, var, src, width);
+#else
+	return __shfl(var, src, width);
+#endif
+#else // this doesn't work
+	return var;
+#endif
+}
+
+static __device__ __forceinline__ int SHFL_UP(int var, int src, int width = 32)
+{
+#if defined __CUDA_ARCH__
+#if CUDART_VERSION >= 9010
+	return __shfl_up_sync(0xffffffff, var, src, width);
+#else
+	return __shfl_up(var, src, width);
+#endif
+#else // this doesn't work
+	return var;
+#endif
+}
+
 #if __CUDA_ARCH__ < 320
 // Host and Compute 3.0
 #define ROTL32(x, n) SPH_T32(((x) << (n)) | ((x) >> (32 - (n))))
@@ -102,7 +128,7 @@ __device__ __forceinline__ uint64_t REPLACE_LODWORD(const uint64_t &x, const uin
 	return (x & 0xFFFFFFFF00000000ULL) | ((uint64_t)y);
 }
 
-// Endian Drehung für 32 Bit Typen
+// Endian Drehung fï¿½r 32 Bit Typen
 #ifdef __CUDA_ARCH__
 __device__ __forceinline__ uint32_t cuda_swab32(uint32_t x)
 {
@@ -477,24 +503,73 @@ static __host__ __device__ __forceinline__ uint64_t devectorize(uint2 v) {
 #endif
 }
 
-/**
- * uint2 direct ops by c++ operator definitions
- */
+static __device__ __forceinline__ uint2 operator^ (uint2 a, uint32_t b) { return make_uint2(a.x^ b, a.y); }
 static __device__ __forceinline__ uint2 operator^ (uint2 a, uint2 b) { return make_uint2(a.x ^ b.x, a.y ^ b.y); }
 static __device__ __forceinline__ uint2 operator& (uint2 a, uint2 b) { return make_uint2(a.x & b.x, a.y & b.y); }
 static __device__ __forceinline__ uint2 operator| (uint2 a, uint2 b) { return make_uint2(a.x | b.x, a.y | b.y); }
 static __device__ __forceinline__ uint2 operator~ (uint2 a) { return make_uint2(~a.x, ~a.y); }
 static __device__ __forceinline__ void operator^= (uint2 &a, uint2 b) { a = a ^ b; }
 
-static __device__ __forceinline__ uint2 operator+ (uint2 a, uint2 b) {
-	return vectorize(devectorize(a) + devectorize(b));
+static __device__ __forceinline__ uint2 operator+ (uint2 a, uint2 b)
+{
+#ifndef NOASM
+	uint2 result;
+	asm("{\n\t"
+		"add.cc.u32 %0,%2,%4; \n\t"
+		"addc.u32 %1,%3,%5;   \n\t"
+	"}\n\t"
+		: "=r"(result.x), "=r"(result.y) : "r"(a.x), "r"(a.y), "r"(b.x), "r"(b.y));
+	return result;
+#else
+	return make_uint2(a.x + b.x, a.y + b.y);
+#endif
 }
-static __device__ __forceinline__ void operator+= (uint2 &a, uint2 b) { a = a + b; }
 
-static __device__ __forceinline__ uint2 operator- (uint2 a, uint2 b) {
-	return vectorize(devectorize(a) - devectorize(b));
+static __device__ __forceinline__ uint2 operator+ (uint2 a, uint32_t b)
+{
+	uint2 result;
+#ifdef __CUDA_ARCH__
+	asm("{\n\t"
+		"add.cc.u32 %0,%2,%4; \n\t"
+		"addc.u32 %1,%3,%5;   \n\t"
+		"}\n\t"
+		: "=r"(result.x), "=r"(result.y) : "r"(a.x), "r"(a.y), "r"(b), "r"(0));
+#else
+	result = make_uint2(a.x + b, a.y);
+#endif
+	return result;
 }
-static __device__ __forceinline__ void operator-= (uint2 &a, uint2 b) { a = a - b; }
+static __device__ __forceinline__ uint2 operator- (uint2 a, uint2 b)
+{
+#ifndef NOASM
+	uint2 result;
+	asm("{\n\t"
+		"sub.cc.u32 %0,%2,%4; \n\t"
+		"subc.u32 %1,%3,%5;   \n\t"
+		"}\n\t"
+		: "=r"(result.x), "=r"(result.y) : "r"(a.x), "r"(a.y), "r"(b.x), "r"(b.y));
+	return result;
+#else
+return make_uint2(a.x - b.x, a.y - b.y);
+#endif
+}
+
+
+static __device__ __forceinline__ uint4 operator+ (uint4 a, uint4 b)
+{
+	return make_uint4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+}
+static __device__ __forceinline__ uint4 operator^ (uint4 a, uint4 b) { return make_uint4(a.x ^ b.x, a.y ^ b.y, a.z ^ b.z, a.w ^ b.w); }
+static __device__ __forceinline__ uint4 operator& (uint4 a, uint4 b) { return make_uint4(a.x & b.x, a.y & b.y, a.z & b.z, a.w & b.w); }
+static __device__ __forceinline__ uint4 operator| (uint4 a, uint4 b) { return make_uint4(a.x | b.x, a.y | b.y, a.z | b.z, a.w | b.w); }
+static __device__ __forceinline__ uint4 operator~ (uint4 a) { return make_uint4(~a.x, ~a.y, ~a.z, ~a.w); }
+static __device__ __forceinline__ void operator^= (uint4 &a, uint4 b) { a = a ^ b; }
+
+static __device__ __forceinline__ void operator+= (uint2 &a, uint2 b) { a = a + b; }
+static __forceinline__ __device__ uchar4 operator^ (uchar4 a, uchar4 b){return make_uchar4(a.x ^ b.x, a.y ^ b.y, a.z ^ b.z, a.w ^ b.w);}
+static __forceinline__ __device__ uchar4 operator+ (uchar4 a, uchar4 b){return make_uchar4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);}
+
+static __forceinline__ __device__ void operator^= (uchar4 &a, uchar4 b) { a = a ^ b; }
 
 /**
  * basic multiplication between 64bit no carry outside that range (ie mul.lo.b64(a*b))
@@ -502,18 +577,18 @@ static __device__ __forceinline__ void operator-= (uint2 &a, uint2 b) { a = a - 
  */
 static __device__ __forceinline__ uint2 operator* (uint2 a, uint2 b)
 {
-#ifdef __CUDA_ARCH__
+#ifndef NOASM
 	uint2 result;
-	asm("{ // uint2 a*b \n\t"
-		"mul.lo.u32       %0, %2, %4;  \n\t"
-		"mul.hi.u32       %1, %2, %4;  \n\t"
-		"mad.lo.cc.u32    %1, %3, %4, %1; \n\t"
-		"madc.lo.u32      %1, %3, %5, %1; \n\t"
-	"}\n" : "=r"(result.x), "=r"(result.y) : "r"(a.x), "r"(a.y), "r"(b.x), "r"(b.y));
+	asm("{\n\t"
+		"mul.lo.u32        %0,%2,%4;  \n\t"
+		"mul.hi.u32        %1,%2,%4;  \n\t"
+		"mad.lo.cc.u32    %1,%3,%4,%1; \n\t"
+		"madc.lo.u32      %1,%3,%5,%1; \n\t"
+	"}\n\t"
+		: "=r"(result.x), "=r"(result.y) : "r"(a.x), "r"(a.y), "r"(b.x), "r"(b.y));
 	return result;
 #else
-	// incorrect but unused host equiv
-	return make_uint2(a.x * b.x, a.y * b.y);
+	return vectorize(devectorize(a)*devectorize(b));
 #endif
 }
 

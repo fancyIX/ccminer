@@ -49,13 +49,6 @@ texture<uint4, 2, cudaReadModeElementType> texRef2D_4_V;
 
 template <int ALGO> __device__  __forceinline__ void block_mixer(uint4 &b, uint4 &bx, const int x1, const int x2, const int x3);
 
-static __host__ __device__ uint4& operator ^= (uint4& left, const uint4& right) {
-	left.x ^= right.x;
-	left.y ^= right.y;
-	left.z ^= right.z;
-	left.w ^= right.w;
-	return left;
-}
 
 static __host__ __device__ uint4& operator += (uint4& left, const uint4& right) {
 	left.x += right.x;
