@@ -60,8 +60,8 @@ IDI_ICON1               ICON                    "ccminer.ico"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,0,0
- PRODUCTVERSION 0,3,0,0
+ FILEVERSION 0,5,0,0
+ PRODUCTVERSION 0,5,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -76,10 +76,10 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "FileVersion", "0.3.0"
-            VALUE "LegalCopyright", "Copyright (C) 2021"
+            VALUE "FileVersion", "0.5.0"
+            VALUE "LegalCopyright", "Copyright (C) 2022"
             VALUE "ProductName", "ccminer-fancyIX"
-            VALUE "ProductVersion", "0.3.0"
+            VALUE "ProductVersion", "0.5.0"
         END
     END
     BLOCK "VarFileInfo"

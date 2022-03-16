@@ -82,7 +82,7 @@ ccminer_SOURCES	= elist.h miner.h compat.h \
 			  x15/whirlpool.cu x15/cuda_x15_whirlpool_sm3.cu \
 			  x17/x17.cu x17/hmq17.cu x17/cuda_x17_haval256.cu x17/cuda_x17_sha512.cu \
 			  x11/phi.cu x11/cuda_streebog_maxwell.cu \
-			  x11/c11.cu x11/s3.cu x11/sib.cu x11/veltor.cu x11/cuda_streebog.cu
+			  x11/c11.cu x11/s3.cu x11/sib.cu x11/veltor.cu x11/cuda_streebog.cu x11/0x10.cu
 
 # scrypt
 ccminer_SOURCES += scrypt.cpp scrypt-jane.cpp \
@@ -116,10 +116,10 @@ endif
 ccminer_LDADD += -lcuda
 
 nvcc_ARCH :=
-#nvcc_ARCH += -gencode=arch=compute_86,code=\"sm_86,compute_86\"
+nvcc_ARCH += -gencode=arch=compute_86,code=\"sm_86,compute_86\"
 nvcc_ARCH += -gencode=arch=compute_75,code=\"sm_75,compute_75\"
 nvcc_ARCH += -gencode=arch=compute_61,code=\"sm_61,compute_61\"
-nvcc_ARCH += -gencode=arch=compute_52,code=\"sm_52,compute_52\"
+#nvcc_ARCH += -gencode=arch=compute_52,code=\"sm_52,compute_52\"
 #nvcc_ARCH += -gencode=arch=compute_50,code=\"sm_50,compute_50\"
 #nvcc_ARCH += -gencode=arch=compute_35,code=\"sm_35,compute_35\"
 #nvcc_ARCH += -gencode=arch=compute_30,code=\"sm_30,compute_30\"

@@ -2246,6 +2246,7 @@ static void *miner_thread(void *userdata)
 			case ALGO_TIMETRAVEL:
 			case ALGO_BITCORE:
 			case ALGO_X11EVO:
+			case ALGO_0X10:
 			case ALGO_X11:
 			case ALGO_X13:
 			case ALGO_WHIRLCOIN:
@@ -2485,6 +2486,9 @@ static void *miner_thread(void *userdata)
 			break;
 		case ALGO_X11EVO:
 			rc = scanhash_x11evo(thr_id, &work, max_nonce, &hashes_done);
+			break;
+		case ALGO_0X10:
+			rc = scanhash_hash0x10(thr_id, &work, max_nonce, &hashes_done);
 			break;
 		case ALGO_X11:
 			rc = scanhash_x11(thr_id, &work, max_nonce, &hashes_done);

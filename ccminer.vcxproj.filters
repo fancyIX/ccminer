@@ -730,6 +730,9 @@
     <CudaCompile Include="x11\x11.cu">
       <Filter>Source Files\CUDA\x11</Filter>
     </CudaCompile>
+    <CudaCompile Include="x11\0x10.cu">
+      <Filter>Source Files\CUDA\x11</Filter>
+    </CudaCompile>
     <CudaCompile Include="x11\x11evo.cu">
       <Filter>Source Files\CUDA\x11</Filter>
     </CudaCompile>

@@ -322,6 +322,7 @@ extern int scanhash_veltor(int thr_id, struct work* work, uint32_t max_nonce, un
 extern int scanhash_whirl(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done);
 extern int scanhash_wildkeccak(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done);
 extern int scanhash_x11evo(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done);
+extern int scanhash_hash0x10(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done);
 extern int scanhash_x11(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done);
 extern int scanhash_x13(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done);
 extern int scanhash_x14(int thr_id, struct work* work, uint32_t max_nonce, unsigned long *hashes_done);
@@ -924,6 +925,7 @@ void veltorhash(void *output, const void *input);
 void wcoinhash(void *state, const void *input);
 void whirlxHash(void *state, const void *input);
 void x11evo_hash(void *output, const void *input);
+void hash0x10(void *output, const void *input);
 void x11hash(void *output, const void *input);
 void x13hash(void *output, const void *input);
 void x14hash(void *output, const void *input);

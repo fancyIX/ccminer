@@ -26,7 +26,7 @@ extern void skein256_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNon
 extern void skein256_cpu_init(int thr_id, uint32_t threads);
 
 extern void lyra2_cpu_init(int thr_id, uint32_t threads, uint64_t *d_matrix);
-extern void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNonce, uint64_t *d_outputHash, bool gtx750ti, bool high_end);
+extern void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNonce, uint64_t *d_outputHash, bool gtx750ti, uint32_t high_end);
 
 extern void groestl256_cpu_init(int thr_id, uint32_t threads);
 extern void groestl256_cpu_free(int thr_id);
@@ -80,7 +80,7 @@ extern "C" int scanhash_lyra2(int thr_id, struct work* work, uint32_t max_nonce,
 		ptarget[7] = 0x00ff;
 
 	static __thread bool gtx750ti;
-	static __thread bool high_end;
+	static __thread uint32_t high_end;
 	if (!init[thr_id])
 	{
 		int dev_id = device_map[thr_id];

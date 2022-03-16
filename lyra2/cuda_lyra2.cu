@@ -34,6 +34,25 @@
  
  __device__ uint2 *DMatrix;
  
+ __device__ __forceinline__ void LD4SSB(uint2 res[3], const int row, const int col, const int thread, const int threads)
+ {
+     extern __shared__ uint2 shared_mem[];
+     const int s0 = (Ncol * (row - BUF_COUNT) + col) * memshift;
+
+	res[0] = shared_mem[((s0 + 0) * 8 + threadIdx.y) * 4 + threadIdx.x];
+	res[1] = shared_mem[((s0 + 1) * 8 + threadIdx.y) * 4 + threadIdx.x];
+	res[2] = shared_mem[((s0 + 2) * 8 + threadIdx.y) * 4 + threadIdx.x];
+ }
+ 
+ __device__ __forceinline__ void ST4SSB(const int row, const int col, const uint2 data[3], const int thread, const int threads)
+ {
+     extern __shared__ uint2 shared_mem[];
+     const int s0 = (Ncol * (row - BUF_COUNT) + col) * memshift;
+ 
+     shared_mem[((s0 + 0) * 8 + threadIdx.y) * 4 + threadIdx.x] = data[0];
+	 shared_mem[((s0 + 1) * 8 + threadIdx.y) * 4 + threadIdx.x] = data[1];
+	 shared_mem[((s0 + 2) * 8 + threadIdx.y) * 4 + threadIdx.x] = data[2];
+ }
 
  __device__ __forceinline__ void LD4SS(uint2 res[3], const int row, const int col, const int thread, const int threads)
  {
@@ -506,6 +525,297 @@
          state[j] ^= last[j];
  }
 
+ // ================================= big local mem ==========================
+ static __device__ __forceinline__
+ void reduceDuplex_biglocal(uint2 state[4], uint32_t thread, const uint32_t threads)
+ {
+     uint2 state1[3];
+	 uint2 state2[3];
+ 
+
+     for (int i = 0; i < Nrow; i++)
+     {
+         ST4SSB(0, Ncol - i - 1, state, thread, threads);
+ 
+         round_lyra(state);
+     }
+ 
+     for (int i = 0; i < Nrow; i+=2)
+     {
+         LD4SSB(state1, 0, i, thread, threads);
+		 LD4SSB(state2, 0, i + 1, thread, threads);
+		 #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state1[j];
+ 
+         round_lyra(state);
+ 
+		 #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state1[j] ^= state[j];
+		
+			 #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state2[j];
+ 
+         round_lyra(state);
+ 
+		 #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state2[j] ^= state[j];
+         ST4SSB(1, Ncol - i - 1, state1, thread, threads);
+		 ST4SSB(1, Ncol - (i + 1) - 1, state2, thread, threads);
+     }
+ }
+ 
+ static __device__ __forceinline__
+ void reduceDuplexRowSetup_biglocal(const int rowIn, const int rowInOut, const int rowOut, uint2 state[4], uint32_t thread, const uint32_t threads)
+ {
+     uint2 state1[3], state2[3], state3[3], state4[3];
+
+     for (int i = 0; i < Nrow; i+=2)
+     {
+         LD4SSB(state1, rowIn, i, thread, threads);
+		 LD4SSB(state2, rowInOut, i, thread, threads);
+		 LD4SSB(state3, rowIn, i + 1, thread, threads);
+		 LD4SSB(state4, rowInOut, i + 1, thread, threads);
+		 #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state1[j] + state2[j];
+ 
+         round_lyra(state);
+ 
+         #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state1[j] ^= state[j];
+ 
+         ST4SSB(rowOut, Ncol - i - 1, state1, thread, threads);
+ 
+         // simultaneously receive data from preceding thread and send data to following thread
+         uint2 Data0 = state[0];
+         uint2 Data1 = state[1];
+         uint2 Data2 = state[2];
+         WarpShuffle3(Data0, Data1, Data2, threadIdx.x - 1, threadIdx.x - 1, threadIdx.x - 1, 4);
+ 
+         if (threadIdx.x == 0)
+         {
+             state2[0] ^= Data2;
+             state2[1] ^= Data0;
+             state2[2] ^= Data1;
+         } else {
+             state2[0] ^= Data0;
+             state2[1] ^= Data1;
+             state2[2] ^= Data2;
+         }
+ 
+         ST4SSB(rowInOut, i, state2, thread, threads);
+
+		//=====================================
+		 #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state3[j] + state4[j];
+ 
+         round_lyra(state);
+ 
+         #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state3[j] ^= state[j];
+ 
+         ST4SSB(rowOut, Ncol - (i + 1) - 1, state3, thread, threads);
+ 
+         // simultaneously receive data from preceding thread and send data to following thread
+         uint2 Data01 = state[0];
+         uint2 Data11 = state[1];
+         uint2 Data21 = state[2];
+         WarpShuffle3(Data01, Data11, Data21, threadIdx.x - 1, threadIdx.x - 1, threadIdx.x - 1, 4);
+ 
+         if (threadIdx.x == 0)
+         {
+             state4[0] ^= Data21;
+             state4[1] ^= Data01;
+             state4[2] ^= Data11;
+         } else {
+             state4[0] ^= Data01;
+             state4[1] ^= Data11;
+             state4[2] ^= Data21;
+         }
+ 
+         ST4SSB(rowInOut, (i + 1), state4, thread, threads);
+     }
+ }
+ 
+ static __device__ __forceinline__
+ void reduceDuplexRowt_biglocal(const int rowIn, const int rowInOut, const int rowOut, uint2 state[4], const uint32_t thread, const uint32_t threads)
+ {
+     for (int i = 0; i < Nrow; i+=2)
+     {
+         uint2 state1[3], state2[3], state3[3], state4[3];
+ 
+         LD4SSB(state1, rowIn, i, thread, threads);
+         LD4SSB(state2, rowInOut, i, thread, threads);
+		 LD4SSB(state3, rowIn, i + 1, thread, threads);
+         LD4SSB(state4, rowInOut, i + 1, thread, threads);
+ 
+ #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state1[j] + state2[j];
+ 
+         LD4SSB(state1, rowOut, i, thread, threads);
+
+         round_lyra(state);
+ 
+         // simultaneously receive data from preceding thread and send data to following thread
+         uint2 Data0 = state[0];
+         uint2 Data1 = state[1];
+         uint2 Data2 = state[2];
+         WarpShuffle3(Data0, Data1, Data2, threadIdx.x - 1, threadIdx.x - 1, threadIdx.x - 1, 4);
+ 
+         if (threadIdx.x == 0)
+         {
+             state2[0] ^= Data2;
+             state2[1] ^= Data0;
+             state2[2] ^= Data1;
+         }
+         else
+         {
+             state2[0] ^= Data0;
+             state2[1] ^= Data1;
+             state2[2] ^= Data2;
+         }
+
+        if (rowInOut != rowOut) {
+             ST4SSB(rowInOut, i, state2, thread, threads);
+                 #pragma unroll
+            for (int j = 0; j < 3; j++)
+                state2[j] = state1[j];
+         }
+
+#pragma unroll
+        for (int j = 0; j < 3; j++)
+            state2[j] ^= state[j];
+
+        ST4SSB(rowOut, i, state2, thread, threads);
+
+		 //======================================
+ 
+ 
+ #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state3[j] + state4[j];
+ 
+        LD4SSB(state3, rowOut, i + 1, thread, threads);
+
+         round_lyra(state);
+ 
+         // simultaneously receive data from preceding thread and send data to following thread
+         uint2 Data01 = state[0];
+         uint2 Data11 = state[1];
+         uint2 Data21 = state[2];
+         WarpShuffle3(Data01, Data11, Data21, threadIdx.x - 1, threadIdx.x - 1, threadIdx.x - 1, 4);
+ 
+         if (threadIdx.x == 0)
+         {
+             state4[0] ^= Data21;
+             state4[1] ^= Data01;
+             state4[2] ^= Data11;
+         }
+         else
+         {
+             state4[0] ^= Data01;
+             state4[1] ^= Data11;
+             state4[2] ^= Data21;
+         }
+
+         if (rowInOut != rowOut) {
+             ST4SSB(rowInOut, i + 1, state4, thread, threads);
+                 #pragma unroll
+            for (int j = 0; j < 3; j++)
+                state4[j] = state3[j];
+         }
+
+#pragma unroll
+        for (int j = 0; j < 3; j++)
+            state4[j] ^= state[j];
+
+        ST4SSB(rowOut, i + 1, state4, thread, threads);
+     }
+ }
+ 
+ static __device__ __forceinline__
+ void reduceDuplexRowt_8_biglocal(const int rowInOut, uint2* state, const uint32_t thread, const uint32_t threads)
+ {
+     uint2 state1[3], state2[3], state3[3], state4[3], last[3];
+ 
+     LD4SSB(state1, 2, 0, thread, threads);
+     LD4SSB(last, rowInOut, 0, thread, threads);
+ 
+     #pragma unroll
+     for (int j = 0; j < 3; j++)
+         state[j] ^= state1[j] + last[j];
+ 
+     round_lyra(state);
+ 
+     // simultaneously receive data from preceding thread and send data to following thread
+     uint2 Data0 = state[0];
+     uint2 Data1 = state[1];
+     uint2 Data2 = state[2];
+     WarpShuffle3(Data0, Data1, Data2, threadIdx.x - 1, threadIdx.x - 1, threadIdx.x - 1, 4);
+ 
+     if (threadIdx.x == 0)
+     {
+         last[0] ^= Data2;
+         last[1] ^= Data0;
+         last[2] ^= Data1;
+     } else {
+         last[0] ^= Data0;
+         last[1] ^= Data1;
+         last[2] ^= Data2;
+     }
+ 
+     if (rowInOut == 5)
+     {
+         #pragma unroll
+         for (int j = 0; j < 3; j++)
+             last[j] ^= state[j];
+     }
+ 
+	 LD4SSB(state1, 2, 1, thread, threads);
+	 LD4SSB(state2, rowInOut, 1, thread, threads);
+
+	 #pragma unroll
+	 for (int j = 0; j < 3; j++)
+		 state[j] ^= state1[j] + state2[j];
+
+	 round_lyra(state);
+
+     for (int i = 2; i < Nrow; i+=2)
+     {
+         LD4SSB(state1, 2, i, thread, threads);
+         LD4SSB(state2, rowInOut, i, thread, threads);
+		 LD4SSB(state3, 2, i + 1, thread, threads);
+         LD4SSB(state4, rowInOut, i + 1, thread, threads);
+ 
+         #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state1[j] + state2[j];
+ 
+         round_lyra(state);
+
+		 //============================
+ 
+         #pragma unroll
+         for (int j = 0; j < 3; j++)
+             state[j] ^= state3[j] + state4[j];
+ 
+         round_lyra(state);
+     }
+ 
+     #pragma unroll
+     for (int j = 0; j < 3; j++)
+         state[j] ^= last[j];
+ }
+ // ================================= local mem big ==========================
+
  // ================================= high end ==========================
  static __device__ __forceinline__
  void reduceDuplex_high_end(uint2 state[4], uint32_t thread, const uint32_t threads, uint64_t *g_pad)
@@ -908,6 +1218,47 @@
      }
  }
  
+ __global__
+ __launch_bounds__(64, 1)
+ void lyra2_gpu_hash_32_2_biglocal(uint32_t threads, uint32_t startNounce, uint64_t *g_hash)
+ {
+     const uint32_t thread = blockDim.y * blockIdx.x + threadIdx.y;
+ 
+     if (thread < threads)
+     {
+         uint2 state[4];
+         state[0] = __ldg(&DMatrix[(0 * threads + thread) * blockDim.x + threadIdx.x]);
+         state[1] = __ldg(&DMatrix[(1 * threads + thread) * blockDim.x + threadIdx.x]);
+         state[2] = __ldg(&DMatrix[(2 * threads + thread) * blockDim.x + threadIdx.x]);
+         state[3] = __ldg(&DMatrix[(3 * threads + thread) * blockDim.x + threadIdx.x]);
+ 
+         reduceDuplex_biglocal(state, thread, threads);
+         reduceDuplexRowSetup_biglocal(1, 0, 2, state, thread, threads);
+         reduceDuplexRowSetup_biglocal(2, 1, 3, state, thread, threads);
+         reduceDuplexRowSetup_biglocal(3, 0, 4, state, thread, threads);
+         reduceDuplexRowSetup_biglocal(4, 3, 5, state, thread, threads);
+         reduceDuplexRowSetup_biglocal(5, 2, 6, state, thread, threads);
+         reduceDuplexRowSetup_biglocal(6, 1, 7, state, thread, threads);
+
+         uint32_t rowa;
+         uint32_t row = 0;
+         uint32_t pre = 7;
+         for (int i = 0; i < 7; i++) {
+            rowa = WarpShuffle(state[0].x, 0, 4) & 7;
+            reduceDuplexRowt_biglocal(pre, rowa, row, state, thread, threads);
+            pre = row;
+            row = (row + 3) % 8;
+         }
+         rowa = WarpShuffle(state[0].x, 0, 4) & 7;
+         reduceDuplexRowt_8_biglocal(rowa, state, thread, threads);
+ 
+         DMatrix[(0 * threads + thread) * blockDim.x + threadIdx.x] = state[0];
+         DMatrix[(1 * threads + thread) * blockDim.x + threadIdx.x] = state[1];
+         DMatrix[(2 * threads + thread) * blockDim.x + threadIdx.x] = state[2];
+         DMatrix[(3 * threads + thread) * blockDim.x + threadIdx.x] = state[3];
+     }
+ }
+
 __global__
  __launch_bounds__(64, 1)
  void lyra2_gpu_hash_32_2_high_end(uint32_t threads, uint32_t startNounce, uint64_t *g_pad)
@@ -995,12 +1346,12 @@ void lyra2_cpu_init_high_end(int thr_id, uint32_t threads, uint64_t *g_pad)
 }
 
 __host__
-void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, bool gtx750ti, bool high_end)
+void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, bool gtx750ti, uint32_t high_end)
 {
 }
 
 __host__
-void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, bool high_end)
+void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, uint32_t high_end)
 {
 	int dev_id = device_map[thr_id % MAX_GPUS];
 
@@ -1009,6 +1360,9 @@ void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounc
 	if (cuda_arch[dev_id] >= 520) tpb = TPB52;
 	else if (cuda_arch[dev_id] >= 500) tpb = TPB50;
 	else if (cuda_arch[dev_id] >= 200) tpb = TPB20;
+
+    dim3 grid0((threads * 4 + 32 - 1) / 32);
+	dim3 block0(4, 32 >> 2);
 
 	dim3 grid1((threads * 4 + 64 - 1) / 64);
 	dim3 block1(4, 64 >> 2);
@@ -1023,8 +1377,10 @@ void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounc
 	{
 		lyra2_gpu_hash_32_1 <<< grid2, block2 >>> (threads, startNounce, (uint2*)d_hash);
 
-        if (high_end)
+        if (high_end == 1)
             lyra2_gpu_hash_32_2_high_end <<< grid1, block1, 12 * (8 - 0) * sizeof(uint2) * 64 >>> (threads, startNounce, g_pad);
+        else if (high_end == 2)
+            lyra2_gpu_hash_32_2_biglocal <<< grid0, block0, 24 * (8 - 0) * sizeof(uint2) * 32 >>> (threads, startNounce, g_pad);
         else
 		    lyra2_gpu_hash_32_2 <<< grid1, block1, 12 * (8 - 0) * sizeof(uint2) * 64 >>> (threads, startNounce, d_hash);
 

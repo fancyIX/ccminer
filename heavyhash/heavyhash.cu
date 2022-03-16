@@ -11,6 +11,8 @@ extern void heavyhash_cpu_setTarget(const void *pTargetIn);
 extern uint32_t heavyhash_cpu_hash(int thr_id, uint32_t threads, uint32_t startNounce, int order);
 extern uint32_t heavyhash_getSecNonce(int thr_id, int num);
 extern void heavyhash_cpu_free(int thr_id);
+extern void heavyhash_init(int thr_id);
+
 
 extern "C" void heavyhash_hash(void *ohash, const void *input)
 {
@@ -59,7 +61,9 @@ extern "C" int scanhash_heavyhash(int thr_id, struct work* work, uint32_t max_no
 
         gpulog(LOG_INFO, thr_id, "Intensity set to %g, %u cuda threads", throughput2intensity(throughput), throughput);
 
-		init[thr_id] = true;
+        heavyhash_init(thr_id);
+
+        init[thr_id] = true;
     }
 
     uint32_t _ALIGN(128) endiandata[20];

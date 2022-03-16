@@ -198,7 +198,7 @@
       <MaxRegCount>128</MaxRegCount>
       <PtxAsOptionV>true</PtxAsOptionV>
       <Keep>true</Keep>
-      <CodeGeneration>compute_75,sm_75;compute_61,sm_61;compute_52,sm_52</CodeGeneration>
+      <CodeGeneration>compute_86,sm_86;compute_75,sm_75;compute_61,sm_61</CodeGeneration>
       <Include>$(NVTOOLSEXT_PATH)\include</Include>
       <Optimization>O3</Optimization>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -550,6 +550,7 @@
     <CudaCompile Include="x11\bitcore.cu" />
     <CudaCompile Include="x11\veltor.cu" />
     <CudaCompile Include="x11\x11.cu" />
+    <CudaCompile Include="x11\0x10.cu" />
     <CudaCompile Include="x11\x11evo.cu" />
     <CudaCompile Include="x13\cuda_x13_hamsi512.cu">
       <MaxRegCount>72</MaxRegCount>

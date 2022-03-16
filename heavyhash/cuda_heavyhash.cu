@@ -225,11 +225,15 @@ void heavyhash_cpu_setTarget(const void *pTargetIn)
 }
 
 __host__
-uint32_t heavyhash_cpu_hash(int thr_id, uint32_t threads, uint32_t startNounce, int order)
+void heavyhash_init(int thr_id)
 {
     cudaMalloc(&d_GNonces[thr_id], 2*sizeof(uint32_t));
 	cudaMallocHost(&h_GNonces[thr_id], 2*sizeof(uint32_t));
+}
 
+__host__
+uint32_t heavyhash_cpu_hash(int thr_id, uint32_t threads, uint32_t startNounce, int order)
+{
 	uint32_t result = UINT32_MAX;
 	cudaMemset(d_GNonces[thr_id], 0xff, 2*sizeof(uint32_t));
 	const uint32_t threadsperblock = 256;

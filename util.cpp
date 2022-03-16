@@ -2309,6 +2309,9 @@ void print_hash_tests(void)
 	x11evo_hash(&hash[0], &buf[0]);
 	printpfx("x11evo", hash);
 
+	hash0x10(&hash[0], &buf[0]);
+	printpfx("0x10", hash);
+
 	x11hash(&hash[0], &buf[0]);
 	printpfx("X11", hash);
 

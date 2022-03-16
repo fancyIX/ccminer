@@ -29,8 +29,8 @@ extern void skein256_cpu_init(int thr_id, uint32_t threads);
 
 extern void lyra2_cpu_init(int thr_id, uint32_t threads, uint64_t *d_matrix);
 extern void lyra2_cpu_init_high_end(int thr_id, uint32_t threads, uint64_t *g_pad);
-extern void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNonce, uint64_t *d_outputHash, bool gtx750ti, bool high_end);
-extern void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, bool high_end);
+extern void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNonce, uint64_t *d_outputHash, bool gtx750ti, uint32_t high_end);
+extern void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, uint32_t high_end);
 
 extern void groestl256_cpu_init(int thr_id, uint32_t threads);
 extern void groestl256_cpu_free(int thr_id);
@@ -92,7 +92,7 @@ extern "C" int scanhash_allium(int thr_id, struct work* work, uint32_t max_nonce
 		ptarget[7] = 0x0400;
 
 	static __thread bool gtx750ti;
-	static __thread bool high_end;
+	static __thread uint32_t high_end;
 	if (!init[thr_id])
 	{
 		int dev_id = device_map[thr_id];
@@ -111,11 +111,15 @@ extern "C" int scanhash_allium(int thr_id, struct work* work, uint32_t max_nonce
 		else gtx750ti = false;
 
 		if (strstr(props.name, "1080") ||
-		    strstr(props.name, "1070") ||
+		    strstr(props.name, "1070")) high_end = 1;
+		if (strstr(props.name, "3090") ||
 		    strstr(props.name, "3080") ||
             strstr(props.name, "3070") ||
-		    strstr(props.name, "3060")) high_end = true;
-		else high_end = false;
+		    strstr(props.name, "3060") ||
+			strstr(props.name, "A4000") ||
+			strstr(props.name, "A5000") ||
+			strstr(props.name, "A6000")) high_end = 2;
+		else high_end = 0;
 
 		gpulog(LOG_INFO, thr_id, "Intensity set to %g, %u cuda threads", throughput2intensity(throughput), throughput);
 
@@ -130,7 +134,7 @@ extern "C" int scanhash_allium(int thr_id, struct work* work, uint32_t max_nonce
 			size_t matrix_sz = device_sm[dev_id] > 500 ? sizeof(uint64_t) * 4 * 4 : sizeof(uint64_t) * 8 * 8 * 3 * 4;
 			CUDA_SAFE_CALL(cudaMalloc(&d_matrix[thr_id], matrix_sz * throughput));
 			lyra2_cpu_init(thr_id, throughput, d_matrix[thr_id]);
-			if (high_end) {
+			if (high_end == 1) {
 				size_t pad_sz = sizeof(uint64_t) * 8 * 8 * 3 * 4;
 				CUDA_SAFE_CALL(cudaMalloc(&g_pad[thr_id], pad_sz * throughput));
 				lyra2_cpu_init_high_end(thr_id, throughput, g_pad[thr_id]);
