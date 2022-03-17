@@ -270,18 +270,6 @@
     <ClCompile Include="lyra2\Lyra2Z.c">
       <Filter>Source Files\sph</Filter>
     </ClCompile>
-    <ClCompile Include="heavyhash/heavyhash-gate.c">
-      <Filter>Source Files\heavyhash</Filter>
-    </ClCompile>
-    <ClCompile Include="heavyhash/keccak_tiny.c">
-      <Filter>Source Files\heavyhash</Filter>
-    </ClCompile>
-    <ClCompile Include="scrypt.cpp">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </ClCompile>
-    <ClCompile Include="scrypt-jane.cpp">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </ClCompile>
     <ClCompile Include="neoscrypt\neoscrypt.cpp">
       <Filter>Source Files\neoscrypt</Filter>
     </ClCompile>
@@ -345,15 +333,14 @@
     <ClCompile Include="equi\equi.cpp">
       <Filter>Source Files\equi</Filter>
     </ClCompile>
-    <ClCompile Include="equi\equihash.cpp">
-      <Filter>Source Files\equi</Filter>
-    </ClCompile>
     <ClCompile Include="equi\equi-stratum.cpp">
       <Filter>Source Files\equi</Filter>
     </ClCompile>
     <ClCompile Include="equi\blake2\blake2bx.cpp">
       <Filter>Source Files\equi</Filter>
     </ClCompile>
+    <ClCompile Include="heavyhash/heavyhash-gate.c" />
+    <ClCompile Include="heavyhash/keccak_tiny.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="algos.h">
@@ -512,12 +499,6 @@
     <ClInclude Include="lyra2\Lyra2Z.h">
       <Filter>Header Files\lyra2</Filter>
     </ClInclude>
-    <ClInclude Include="heavyhash/heavyhash-gate.h">
-      <Filter>Source Files\heavyhash</Filter>
-    </ClInclude>
-    <ClInclude Include="heavyhash/keccak_tiny.h">
-      <Filter>Source Files\heavyhash</Filter>
-    </ClInclude>
     <ClInclude Include="lyra2\Sponge.h">
       <Filter>Header Files\lyra2</Filter>
     </ClInclude>
@@ -605,9 +586,8 @@
     <ClInclude Include="equi\eqcuda.hpp">
       <Filter>Source Files\equi</Filter>
     </ClInclude>
-    <ClInclude Include="equi\equihash.h">
-      <Filter>Source Files\equi</Filter>
-    </ClInclude>
+    <ClInclude Include="heavyhash/heavyhash-gate.h" />
+    <ClInclude Include="heavyhash/keccak_tiny.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="cuda.cpp">
@@ -877,31 +857,13 @@
     <CudaCompile Include="scrypt\blake.cu">
       <Filter>Source Files\CUDA\scrypt</Filter>
     </CudaCompile>
-    <CudaCompile Include="scrypt\fermi_kernel.cu">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </CudaCompile>
     <CudaCompile Include="scrypt\keccak.cu">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </CudaCompile>
-    <CudaCompile Include="scrypt\kepler_kernel.cu">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </CudaCompile>
-    <CudaCompile Include="scrypt\nv_kernel.cu">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </CudaCompile>
-    <CudaCompile Include="scrypt\nv_kernel2.cu">
       <Filter>Source Files\CUDA\scrypt</Filter>
     </CudaCompile>
     <CudaCompile Include="scrypt\salsa_kernel.cu">
       <Filter>Source Files\CUDA\scrypt</Filter>
     </CudaCompile>
     <CudaCompile Include="scrypt\sha256.cu">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </CudaCompile>
-    <CudaCompile Include="scrypt\test_kernel.cu">
-      <Filter>Source Files\CUDA\scrypt</Filter>
-    </CudaCompile>
-    <CudaCompile Include="scrypt\titan_kernel.cu">
       <Filter>Source Files\CUDA\scrypt</Filter>
     </CudaCompile>
     <CudaCompile Include="neoscrypt\cuda_neoscrypt.cu">
@@ -979,18 +941,11 @@
     <CudaCompile Include="crypto\wildkeccak.cu">
       <Filter>Source Files\CUDA</Filter>
     </CudaCompile>
-    <CudaCompile Include="equi\cuda_equi.cu">
-      <Filter>Source Files\equi</Filter>
-    </CudaCompile>
     <CudaCompile Include="allium.cu">
       <Filter>Source Files\CUDA</Filter>
     </CudaCompile>
-    <CudaCompile Include="heavyhash/heavyhash.cu">
-      <Filter>Source Files\CUDA\heavyhash</Filter>
-    </CudaCompile>
-    <CudaCompile Include="heavyhash/cuda_heavyhash.cu">
-      <Filter>Source Files\CUDA\heavyhash</Filter>
-    </CudaCompile>
+    <CudaCompile Include="heavyhash/heavyhash.cu" />
+    <CudaCompile Include="heavyhash/cuda_heavyhash.cu" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ccminer.ico">

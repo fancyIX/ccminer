@@ -4,7 +4,7 @@ Based on Christian Buchner's &amp; Christian H.'s CUDA project, no more active o
 
 Check the [README.txt](README.txt) for the additions
 
-GRLC donation address: GUZA18kQyjfKDPLdcrHKhvcvdoS1JcUr2V (fancyIX)
+GRLC donation address: MAwRJdqwF381h49EHPnEt8rfdgpUdwvbfJ (BuBoNiK666)
 
 This branck is for improving allium performance forked from [lenis0012](https://github.com/lenis0012/ccminer)
 

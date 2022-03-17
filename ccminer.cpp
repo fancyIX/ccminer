@@ -55,7 +55,7 @@
 BOOL WINAPI ConsoleHandler(DWORD);
 #endif
 
-#define PROGRAM_NAME		"ccminer-fancyIX"
+#define PROGRAM_NAME		"ccminer-BuBoNiK666"
 #define LP_SCANTIME		60
 #define HEAVYCOIN_BLKHDR_SZ		84
 #define MNR_BLKHDR_SZ 80
@@ -3864,7 +3864,7 @@ int main(int argc, char *argv[])
 	// get opt_quiet early
 	parse_single_opt('q', argc, argv);
 
-	printf("*** ccminer-fancyIX " PACKAGE_VERSION " for nVidia GPUs by fancyIX@github ***\n");
+	printf("*** ccminer-BuBoNiK666 " PACKAGE_VERSION " for nVidia GPUs by gh repo clone BuboniK666/ccminer ***\n");
 	if (!opt_quiet) {
 		const char* arch = is_x64() ? "64-bits" : "32-bits";
 #ifdef _MSC_VER
@@ -3875,7 +3875,7 @@ int main(int argc, char *argv[])
 			CUDART_VERSION/1000, (CUDART_VERSION % 1000)/10, arch);
 		printf("  Originally based on Christian Buchner and Christian H. project\n");
 		printf("  Include some kernels from lenis0012, tpruvot, alexis78, djm34, djEzo, tsiv and krnlx.\n\n");
-		printf("GRLC donation address: GUZA18kQyjfKDPLdcrHKhvcvdoS1JcUr2V (fancyIX)\n\n");
+		printf("GRLC donation address: GUZA18kQyjfKDPLdcrHKhvcvdoS1JcUr2V (BuBoNiK666)\n\n");
 	}
 
 	rpc_user = strdup("");

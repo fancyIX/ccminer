@@ -1,5 +1,5 @@
 /**
- * fancyIX
+ * BuBoNiK666
  * Lyra2 (v1) cuda implementation based on djm34 work
  * tpruvot@github 2015, Nanashi 08/2016 (from 1.8-r2)
  */
@@ -1351,7 +1351,7 @@ void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNounce, uint6
 }
 
 __host__
-void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, uint32_t high_end)
+void lyra2_cpu_hash_32_BuBoNiK666(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, uint32_t high_end)
 {
 	int dev_id = device_map[thr_id % MAX_GPUS];
 

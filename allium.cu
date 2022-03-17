@@ -30,7 +30,7 @@ extern void skein256_cpu_init(int thr_id, uint32_t threads);
 extern void lyra2_cpu_init(int thr_id, uint32_t threads, uint64_t *d_matrix);
 extern void lyra2_cpu_init_high_end(int thr_id, uint32_t threads, uint64_t *g_pad);
 extern void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNonce, uint64_t *d_outputHash, bool gtx750ti, uint32_t high_end);
-extern void lyra2_cpu_hash_32_fancyIX(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, uint32_t high_end);
+extern void lyra2_cpu_hash_32_BuBoNiK666(int thr_id, uint32_t threads, uint32_t startNounce, uint64_t *d_hash, uint64_t *g_pad, bool gtx750ti, uint32_t high_end);
 
 extern void groestl256_cpu_init(int thr_id, uint32_t threads);
 extern void groestl256_cpu_free(int thr_id);
@@ -158,11 +158,11 @@ extern "C" int scanhash_allium(int thr_id, struct work* work, uint32_t max_nonce
 
 		blakeKeccak256_cpu_hash_80(thr_id, throughput, pdata[19], d_hash[thr_id], order++);
 
-		lyra2_cpu_hash_32_fancyIX(thr_id, throughput, pdata[19], d_hash[thr_id], g_pad[thr_id], gtx750ti, high_end);
+		lyra2_cpu_hash_32_BuBoNiK666(thr_id, throughput, pdata[19], d_hash[thr_id], g_pad[thr_id], gtx750ti, high_end);
 
 		cubehash256_cpu_hash_32(thr_id, throughput, pdata[19], d_hash[thr_id], order++);
 
-		lyra2_cpu_hash_32_fancyIX(thr_id, throughput, pdata[19], d_hash[thr_id], g_pad[thr_id], gtx750ti, high_end);
+		lyra2_cpu_hash_32_BuBoNiK666(thr_id, throughput, pdata[19], d_hash[thr_id], g_pad[thr_id], gtx750ti, high_end);
 
 		skein256_cpu_hash_32(thr_id, throughput, pdata[19], d_hash[thr_id], order++);
 

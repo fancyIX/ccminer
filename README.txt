@@ -1,5 +1,5 @@
 
-ccminer-fancyIX 0.3.0 (Jan. 2018)     "lyra2v2 and keccak improvements"
+ccminer-BuBoNiK666 0.3.66 (march. 2022)     "lyra2v2 and keccak improvements"
 ---------------------------------------------------------------
 
 ***************************************************************

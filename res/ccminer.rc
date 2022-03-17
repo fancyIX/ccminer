@@ -78,8 +78,8 @@ BEGIN
         BEGIN
             VALUE "FileVersion", "0.5.0"
             VALUE "LegalCopyright", "Copyright (C) 2022"
-            VALUE "ProductName", "ccminer-fancyIX"
-            VALUE "ProductVersion", "0.5.0"
+            VALUE "ProductName", "ccminer-BuBoNiK666"
+            VALUE "ProductVersion", "0.5.66"
         END
     END
     BLOCK "VarFileInfo"
