@@ -3875,7 +3875,7 @@ int main(int argc, char *argv[])
 			CUDART_VERSION/1000, (CUDART_VERSION % 1000)/10, arch);
 		printf("  Originally based on Christian Buchner and Christian H. project\n");
 		printf("  Include some kernels from lenis0012, tpruvot, alexis78, djm34, djEzo, tsiv and krnlx.\n\n");
-		printf("GRLC donation address: GUZA18kQyjfKDPLdcrHKhvcvdoS1JcUr2V (BuBoNiK666)\n\n");
+		printf("GRLC donation address: MH7aHgtTyivNL2kcAWVaYGL6QuvmX2V42J (BuBoNiK666)\n\n");
 	}
 
 	rpc_user = strdup("");

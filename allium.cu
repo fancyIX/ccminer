@@ -101,7 +101,7 @@ extern "C" int scanhash_allium(int thr_id, struct work* work, uint32_t max_nonce
 
 		int intensity = (device_sm[dev_id] >= 500 && !is_windows()) ? 17 : 16;
 		if (device_sm[device_map[thr_id]] == 500) intensity = 15;
-		throughput = cuda_default_throughput(thr_id, 1U << intensity); // 18=256*256*4;
+		throughput = cuda_default_throughput(thr_id, 1U << intensity); // 25=256*256*4;
 		if (init[thr_id]) throughput = min(throughput, max_nonce - first_nonce);
 
 		cudaDeviceProp props;
