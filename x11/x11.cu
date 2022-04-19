@@ -156,7 +156,7 @@ extern "C" int scanhash_x11(int thr_id, struct work* work, uint32_t max_nonce, u
 		TRACE("skein  :");
 		quark_jh512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
 		TRACE("jh512  :");
-		quark_keccak512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
+		quark_keccak512_cpu_hash_64(thr_id, throughput, NULL, d_hash[thr_id]); order++;
 		TRACE("keccak :");
 		x11_luffaCubehash512_cpu_hash_64(thr_id, throughput, d_hash[thr_id], order++);
 		TRACE("luffa+c:");

@@ -201,6 +201,105 @@ static void GOST_E12(const uint2 shared[8][256],uint2 *const __restrict__ K, uin
 	}
 }
 
+
+#define TPB 256
+__global__
+#if __CUDA_ARCH__ > 500
+__launch_bounds__(TPB, 2)
+#else
+__launch_bounds__(TPB, 3)
+#endif
+void streebog_gpu_hash_64_alexis(uint64_t *g_hash){
+
+	const uint32_t thread = (blockDim.x * blockIdx.x + threadIdx.x);
+	uint2 buf[8], t[8], temp[8], K0[8], hash[8];
+
+	__shared__ uint2 shared[7][256];
+	shared[0][threadIdx.x] = __ldg(&T02[threadIdx.x]);
+	shared[1][threadIdx.x] = __ldg(&T12[threadIdx.x]);
+	shared[2][threadIdx.x] = __ldg(&T22[threadIdx.x]);
+	shared[3][threadIdx.x] = __ldg(&T32[threadIdx.x]);
+	shared[4][threadIdx.x] = __ldg(&T42[threadIdx.x]);
+	shared[5][threadIdx.x] = __ldg(&T52[threadIdx.x]);
+	shared[6][threadIdx.x] = __ldg(&T62[threadIdx.x]);
+	//shared[7][threadIdx.x] = __ldg(&T72[threadIdx.x]);
+
+//	if (thread < threads)
+//	{
+	uint64_t* inout = &g_hash[thread<<3];
+
+	*(uint2x4*)&hash[0] = __ldg4((uint2x4*)&inout[0]);
+	*(uint2x4*)&hash[4] = __ldg4((uint2x4*)&inout[4]);
+
+	__syncthreads();
+
+	#pragma unroll
+	for(int i = 0; i < 8; i++) buf[i] = vectorize(0x74a5d4ce2efc83b3) ^ hash[i];
+
+	#pragma nounroll
+	for(int i = 0; i < 12; i++) {
+		GOST_FS(shared, buf, temp);
+		#pragma unroll
+		for(uint32_t j = 0; j < 8; j++) buf[j] = temp[j] ^ *(uint2*)&precomputed_values[i][j];
+	}
+
+	#pragma unroll
+	for(int j = 0; j < 8; j++) buf[j] ^= hash[j];
+
+	#pragma unroll
+	for(int j = 0; j < 8; j++) K0[j] = buf[j];
+	K0[7].y ^= 0x00020000;
+
+	GOST_FS(shared, K0, t);
+
+	#pragma unroll
+	for(int i = 0; i < 8; i++) K0[i] = t[i];
+
+	t[7].y ^= 0x01000000;
+
+	GOST_E12(shared, K0, t);
+
+	#pragma unroll
+	for(int j = 0; j < 8; j++) buf[j] ^= t[j];
+
+	buf[7].y ^= 0x01000000;
+
+	GOST_FS(shared, buf,K0);
+
+	buf[7].y ^= 0x00020000;
+
+	#pragma unroll
+	for(int j = 0; j < 8; j++) t[j] = K0[j];
+
+	t[7].y ^= 0x00020000;
+
+	GOST_E12(shared, K0, t);
+
+	#pragma unroll
+	for(int j = 0; j < 8; j++) buf[j] ^= t[j];
+
+	GOST_FS(shared, buf,K0); // K = F(h)
+
+	hash[7]+= vectorize(0x0100000000000000);
+
+	#pragma unroll
+	for(int j = 0; j < 8; j++) t[j] = K0[j] ^ hash[j];
+
+	GOST_E12(shared, K0, t);
+
+	*(uint2x4*)&inout[ 0] = *(uint2x4*)&t[ 0] ^ *(uint2x4*)&hash[0] ^ *(uint2x4*)&buf[0];
+	*(uint2x4*)&inout[ 4] = *(uint2x4*)&t[ 4] ^ *(uint2x4*)&hash[4] ^ *(uint2x4*)&buf[4];
+}
+
+__host__
+void streebog_cpu_hash_64_alexis(int thr_id, uint32_t threads, uint32_t *d_hash)
+{
+	dim3 grid((threads + TPB-1) / TPB);
+	dim3 block(TPB);
+
+	streebog_gpu_hash_64_alexis<<<grid, block>>>((uint64_t*)d_hash);
+}
+
 __constant__ uint64_t target64[4];
 
 __host__

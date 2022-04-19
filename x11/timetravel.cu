@@ -329,7 +329,7 @@ extern "C" int scanhash_timetravel(int thr_id, struct work* work, uint32_t max_n
 		quark_jh512_cpu_init(thr_id, throughput);
 		qubit_luffa512_cpu_init(thr_id, throughput); // only constants (480 bytes)
 		x11_luffa512_cpu_init(thr_id, throughput);
-		x11_cubehash512_cpu_init(thr_id, throughput);
+//		x11_cubehash512_cpu_init(thr_id, throughput);
 #if HASH_FUNC_COUNT > 8
 		x11_shavite512_cpu_init(thr_id, throughput);
 		x11_echo512_cpu_init(thr_id, throughput);
@@ -460,7 +460,7 @@ extern "C" int scanhash_timetravel(int thr_id, struct work* work, uint32_t max_n
 				TRACE("jh512  :");
 				break;
 			case KECCAK:
-				quark_keccak512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
+				quark_keccak512_cpu_hash_64(thr_id, throughput, NULL, d_hash[thr_id]); order++;
 				TRACE("keccak :");
 				break;
 			case LUFFA:
@@ -468,7 +468,7 @@ extern "C" int scanhash_timetravel(int thr_id, struct work* work, uint32_t max_n
 				TRACE("luffa  :");
 				break;
 			case CUBEHASH:
-				x11_cubehash512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
+				x11_cubehash512_cpu_hash_64(thr_id, throughput, d_hash[thr_id]); order++;
 				TRACE("cube   :");
 				break;
 #if HASH_FUNC_COUNT > 8

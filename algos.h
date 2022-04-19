@@ -5,10 +5,12 @@
 #include "compat.h"
 
 enum sha_algos {
-	ALGO_BLAKECOIN = 0,
+	ALGO_ANIME = 0,
+	ALGO_BLAKECOIN,
 	ALGO_BLAKE,
 	ALGO_BLAKE2S,
 	ALGO_BMW,
+	ALGO_BMW512,
 	ALGO_BASTION,
 	ALGO_C11,
 	ALGO_CRYPTOLIGHT,
@@ -19,6 +21,7 @@ enum sha_algos {
 	ALGO_EQUIHASH,
 	ALGO_FRESH,
 	ALGO_FUGUE256,		/* Fugue256 */
+	ALGO_GOSTCOIN,
 	ALGO_GROESTL,
 	ALGO_HEAVY,		/* Heavycoin hash */
 	ALGO_HMQ1725,
@@ -37,6 +40,7 @@ enum sha_algos {
 	ALGO_MJOLLNIR,		/* Hefty hash */
 	ALGO_MYR_GR,
 	ALGO_NEOSCRYPT,
+	ALGO_XAYA,
 	ALGO_NIST5,
 	ALGO_PENTABLAKE,
 	ALGO_PHI,
@@ -47,6 +51,7 @@ enum sha_algos {
 	ALGO_SCRYPT_JANE,
 	ALGO_SHA256D,
 	ALGO_SHA256T,
+	ALGO_SHA3D,
 	ALGO_SIA,
 	ALGO_SIB,
 	ALGO_SKEIN,
@@ -62,7 +67,12 @@ enum sha_algos {
 	ALGO_X13,
 	ALGO_X14,
 	ALGO_X15,
+	ALGO_X16R,
+	ALGO_X16RT,
+	ALGO_X16RV2,
+	ALGO_X16S,
 	ALGO_X17,
+	ALGO_X21S,
 	ALGO_VANILLA,
 	ALGO_VELTOR,
 	ALGO_WHIRLCOIN,
@@ -77,10 +87,12 @@ enum sha_algos {
 extern volatile enum sha_algos opt_algo;
 
 static const char *algo_names[] = {
+	"anime",
 	"blakecoin",
 	"blake",
 	"blake2s",
 	"bmw",
+	"bmw512",
 	"bastion",
 	"c11",
 	"cryptolight",
@@ -91,6 +103,7 @@ static const char *algo_names[] = {
 	"equihash",
 	"fresh",
 	"fugue256",
+	"gostcoin",
 	"groestl",
 	"heavy",
 	"hmq1725",
@@ -109,6 +122,7 @@ static const char *algo_names[] = {
 	"mjollnir",
 	"myr-gr",
 	"neoscrypt",
+	"xaya",
 	"nist5",
 	"penta",
 	"phi",
@@ -119,6 +133,7 @@ static const char *algo_names[] = {
 	"scrypt-jane",
 	"sha256d",
 	"sha256t",
+	"sha3d",
 	"sia",
 	"sib",
 	"skein",
@@ -134,7 +149,12 @@ static const char *algo_names[] = {
 	"x13",
 	"x14",
 	"x15",
+	"x16r",
+	"x16rt",
+	"x16rv2",
+	"x16s",
 	"x17",
+	"x21s",
 	"vanilla",
 	"veltor",
 	"whirlcoin",
@@ -187,6 +207,8 @@ static inline int algo_to_int(char* arg)
 			i = ALGO_SHA256D;
 		else if (!strcasecmp("sha256", arg))
 			i = ALGO_SHA256D;
+		else if (!strcasecmp("gostcoin", arg))
+			i = ALGO_GOSTCOIN;
 		else if (!strcasecmp("thorsriddle", arg))
 			i = ALGO_VELTOR;
 		else if (!strcasecmp("timetravel10", arg))
@@ -195,6 +217,8 @@ static inline int algo_to_int(char* arg)
 			i = ALGO_WHIRLPOOL;
 		else if (!strcasecmp("ziftr", arg))
 			i = ALGO_ZR5;
+		else if (!strcasecmp("neoscrypt-xaya", arg))
+			i = ALGO_XAYA;
 		else
 			i = -1;
 	}

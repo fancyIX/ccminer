@@ -98,7 +98,7 @@ extern "C" int scanhash_hash0x10(int thr_id, struct work* work, uint32_t max_non
 	uint32_t *pdata = work->data;
 	uint32_t *ptarget = work->target;
 	const uint32_t first_nonce = pdata[19];
-	int intensity = (device_sm[device_map[thr_id]] >= 500 && !is_windows()) ? 20 : 19;
+	int intensity = (device_sm[device_map[thr_id]] >= 500 && !is_windows()) ? 21 : 20;
 	uint32_t throughput = cuda_default_throughput(thr_id, 1U << intensity); // 19=256*256*8;
 	//if (init[thr_id]) throughput = min(throughput, max_nonce - first_nonce);
 
@@ -123,7 +123,6 @@ extern "C" int scanhash_hash0x10(int thr_id, struct work* work, uint32_t max_non
 		quark_jh512_cpu_init(thr_id, throughput);
 		x11_luffa512_cpu_init(thr_id, throughput);
 		quark_keccak512_cpu_init(thr_id, throughput);
-		x11_cubehash512_cpu_init(thr_id, throughput);
 		if (x11_simd512_cpu_init(thr_id, throughput) != 0) {
 			return 0;
 		}
@@ -148,28 +147,17 @@ extern "C" int scanhash_hash0x10(int thr_id, struct work* work, uint32_t max_non
 
 		// Hash with CUDA
 		quark_blake512_cpu_hash_80(thr_id, throughput, pdata[19], d_hash[thr_id]); order++;
-		TRACE("blake  :");
 		quark_skein512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("skein  :");
 		quark_bmw512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("bmw    :");
 		quark_groestl512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("groestl:");
 		quark_jh512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("jh512  :");
 		x11_luffa512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("luffa+c:");
-		quark_keccak512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("keccak :");
-		x11_cubehash512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("cubehash :");
+		quark_keccak512_cpu_hash_64(thr_id, throughput, NULL, d_hash[thr_id]); order++;
+		x11_cubehash512_cpu_hash_64(thr_id, throughput, d_hash[thr_id]); order++;
 		x11_simd512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("simd   :");
 		x11_shavite512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("shavite:");
 		x11_echo512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		TRACE("echo => ");
-
+		
 		*hashes_done = pdata[19] - first_nonce + throughput;
 
 		work->nonces[0] = cuda_check_hash(thr_id, throughput, pdata[19], d_hash[thr_id]);
