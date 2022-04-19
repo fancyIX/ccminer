@@ -102,7 +102,7 @@ __device__ __forceinline__ uint64_t REPLACE_LODWORD(const uint64_t &x, const uin
 	return (x & 0xFFFFFFFF00000000ULL) | ((uint64_t)y);
 }
 
-// Endian Drehung für 32 Bit Typen
+// Endian Drehung fï¿½r 32 Bit Typen
 #ifdef __CUDA_ARCH__
 __device__ __forceinline__ uint32_t cuda_swab32(uint32_t x)
 {
@@ -178,7 +178,7 @@ do {                                                                  \
 	cudaError_t err = call;                                           \
 	if (cudaSuccess != err) {                                         \
 		fprintf(stderr, "Cuda error in func '%s' at line %i : %s.\n", \
-		         __FUNCTION__, __LINE__, cudaGetErrorString(err) );   \
+				 __FUNCTION__, __LINE__, cudaGetErrorString(err) );   \
 		exit(EXIT_FAILURE);                                           \
 	}                                                                 \
 } while (0)
@@ -226,7 +226,7 @@ uint64_t xor3(uint64_t a, uint64_t b, uint64_t c)
 {
 	uint64_t result;
 	asm("xor.b64 %0, %2, %3; // xor3\n\t"
-	    "xor.b64 %0, %0, %1;\n\t"
+		"xor.b64 %0, %0, %1;\n\t"
 		/* output : input registers */
 		: "=l"(result) : "l"(a), "l"(b), "l"(c));
 	return result;
@@ -480,11 +480,11 @@ static __host__ __device__ __forceinline__ uint64_t devectorize(uint2 v) {
 /**
  * uint2 direct ops by c++ operator definitions
  */
-static __device__ __forceinline__ uint2 operator^ (uint2 a, uint2 b) { return make_uint2(a.x ^ b.x, a.y ^ b.y); }
-static __device__ __forceinline__ uint2 operator& (uint2 a, uint2 b) { return make_uint2(a.x & b.x, a.y & b.y); }
-static __device__ __forceinline__ uint2 operator| (uint2 a, uint2 b) { return make_uint2(a.x | b.x, a.y | b.y); }
-static __device__ __forceinline__ uint2 operator~ (uint2 a) { return make_uint2(~a.x, ~a.y); }
-static __device__ __forceinline__ void operator^= (uint2 &a, uint2 b) { a = a ^ b; }
+static __device__ __host__ __forceinline__ uint2 operator^ (uint2 a, uint2 b) { return make_uint2(a.x ^ b.x, a.y ^ b.y); }
+static __device__ __host__ __forceinline__ uint2 operator& (uint2 a, uint2 b) { return make_uint2(a.x & b.x, a.y & b.y); }
+static __device__ __host__ __forceinline__ uint2 operator| (uint2 a, uint2 b) { return make_uint2(a.x | b.x, a.y | b.y); }
+static __device__ __host__ __forceinline__ uint2 operator~ (uint2 a) { return make_uint2(~a.x, ~a.y); }
+static __device__ __host__ __forceinline__ void operator^= (uint2 &a, uint2 b) { a = a ^ b; }
 
 static __device__ __forceinline__ uint2 operator+ (uint2 a, uint2 b) {
 	return vectorize(devectorize(a) + devectorize(b));
@@ -601,8 +601,34 @@ __device__ __inline__ uint2 ROR24(const uint2 a)
 	result.y = __byte_perm(a.y, a.x, 0x6543);
 	return result;
 }
+__device__ __forceinline__
+uint2 ROL16(const uint2 a){
+	uint2 result;
+	result.x = __byte_perm(a.x, a.y, 0x1076);
+	result.y = __byte_perm(a.y, a.x, 0x1076);
+
+	return result;
+}
+
+__device__ __forceinline__
+uint2 ROL24(const uint2 a){
+	uint2 result;
+	result.x = __byte_perm(a.x, a.y, 0x0765);
+	result.y = __byte_perm(a.y, a.x, 0x0765);
+	return result;
+}
+__device__ __forceinline__
+uint2 ROR8(const uint2 a){
+	uint2 result;
+	result.x = __byte_perm(a.x, a.y, 0x4321);
+	result.y = __byte_perm(a.y, a.x, 0x4321);
+	return result;
+}
 #else
+#define ROR8(u)  ROR2(u, 8)
 #define ROL8(u)  ROL2(u, 8)
+#define ROL16(u) ROL2(u,16)
+#define ROL24(u) ROL2(u,24)
 #define ROR16(u) ROR2(u,16)
 #define ROR24(u) ROR2(u,24)
 #endif
@@ -667,6 +693,29 @@ static uint2 SHR2(uint2 a, int offset)
 	}
 	return a;
 #endif
+}
+
+__device__ __forceinline__
+uint32_t xor3x(uint32_t a,uint32_t b,uint32_t c){
+	uint32_t result;
+	#if __CUDA_ARCH__ >= 500 && CUDA_VERSION >= 7050
+			asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result) : "r"(a), "r"(b),"r"(c));
+	#else
+			result = a^b^c;
+	#endif
+	return result;
+}
+
+__device__ __forceinline__
+uint2 xor3x(const uint2 a,const uint2 b,const uint2 c) {
+	uint2 result;
+#if __CUDA_ARCH__ >= 500 && CUDA_VERSION >= 7050
+	asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result.x) : "r"(a.x), "r"(b.x),"r"(c.x)); //0x96 = 0xF0 ^ 0xCC ^ 0xAA
+	asm ("lop3.b32 %0, %1, %2, %3, 0x96;" : "=r"(result.y) : "r"(a.y), "r"(b.y),"r"(c.y)); //0x96 = 0xF0 ^ 0xCC ^ 0xAA
+#else
+	result = a^b^c;
+#endif
+	return result;
 }
 
 // CUDA 9+ deprecated functions warnings (new mask param)

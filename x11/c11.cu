@@ -178,7 +178,7 @@ extern "C" int scanhash_c11(int thr_id, struct work* work, uint32_t max_nonce, u
 		TRACE("groestl:");
 		quark_jh512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
 		TRACE("jh512  :");
-		quark_keccak512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
+		quark_keccak512_cpu_hash_64(thr_id, throughput, NULL, d_hash[thr_id]); order++;
 		TRACE("keccak :");
 		quark_skein512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
 		TRACE("skein  :");

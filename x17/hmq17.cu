@@ -395,7 +395,7 @@ extern "C" int scanhash_hmq17(int thr_id, struct work* work, uint32_t max_nonce,
 		hmq_merge_cpu(thr_id, throughput, d_hash[thr_id], d_hash_br2[thr_id]);
 
 		quark_jh512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
-		quark_keccak512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
+		quark_keccak512_cpu_hash_64(thr_id, throughput, NULL, d_hash[thr_id]); order++;
 		TRACE("keccak ");
 
 		hmq_filter_cpu(thr_id, throughput, d_hash[thr_id], d_hash_br2[thr_id]);
@@ -407,7 +407,7 @@ extern "C" int scanhash_hmq17(int thr_id, struct work* work, uint32_t max_nonce,
 		TRACE("cube   ");
 
 		hmq_filter_cpu(thr_id, throughput, d_hash[thr_id], d_hash_br2[thr_id]);
-		quark_keccak512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash[thr_id], order++);
+		quark_keccak512_cpu_hash_64(thr_id, throughput, NULL, d_hash[thr_id]); order++;
 		quark_jh512_cpu_hash_64(thr_id, throughput, pdata[19], NULL, d_hash_br2[thr_id], order++);
 		hmq_merge_cpu(thr_id, throughput, d_hash[thr_id], d_hash_br2[thr_id]);
 

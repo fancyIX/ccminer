@@ -754,6 +754,307 @@ void quark_skein512_gpu_hash_64(const uint32_t threads, const uint32_t startNonc
 	}
 }
 
+
+__global__ __launch_bounds__(512, 3)
+void quark_skein512_gpu_hash_64_final(const uint32_t threads, uint64_t* g_hash, uint32_t* resNonce, uint64_t target)
+{
+	const uint32_t thread = (blockDim.x * blockIdx.x + threadIdx.x);
+
+	if (thread < threads){
+
+		// Skein
+		uint2 p[8], h[9];
+
+		const uint32_t hashPosition =  thread;
+
+		uint64_t *Hash = &g_hash[hashPosition << 3];
+
+		uint2x4 *phash = (uint2x4*)Hash;
+		*(uint2x4*)&p[0] = __ldg4(&phash[0]);
+		*(uint2x4*)&p[4] = __ldg4(&phash[1]);
+
+		h[0] = p[0];	h[1] = p[1];	h[2] = p[2];	h[3] = p[3];
+		h[4] = p[4];	h[5] = p[5];	h[6] = p[6];	h[7] = p[7];
+
+		p[0] += buffer[0];	p[1] += buffer[1];	p[2] += buffer[2];	p[3] += buffer[3];
+		p[4] += buffer[4];	p[5] += buffer[5];	p[6] += buffer[6];	p[7] += buffer[7];
+		macro1();
+		p[0] += buffer[8];	p[1] += buffer[9];	p[2] += buffer[10];	p[3] += buffer[11];
+		p[4] += buffer[12];	p[5] += buffer[13];	p[6] += buffer[14];	p[7] += buffer[15];
+		macro2();
+		p[0] += buffer[16];	p[1] += buffer[17];	p[2] += buffer[18];	p[3] += buffer[19];
+		p[4] += buffer[20];	p[5] += buffer[21];	p[6] += buffer[22];	p[7] += buffer[23];
+		macro1();
+		p[0] += buffer[24];	p[1] += buffer[25];	p[2] += buffer[26];	p[3] += buffer[27];
+		p[4] += buffer[28];	p[5] += buffer[29];	p[6] += buffer[30];	p[7] += buffer[31];
+		macro2();
+		p[0] += buffer[32];	p[1] += buffer[33];	p[2] += buffer[34];	p[3] += buffer[35];
+		p[4] += buffer[36];	p[5] += buffer[37];	p[6] += buffer[38];	p[7] += buffer[39];
+		macro1();
+		p[0] += buffer[40];	p[1] += buffer[41];	p[2] += buffer[42];	p[3] += buffer[43];
+		p[4] += buffer[44];	p[5] += buffer[45];	p[6] += buffer[46];	p[7] += buffer[47];
+		macro2();
+		p[0] += buffer[48];	p[1] += buffer[49];	p[2] += buffer[50];	p[3] += buffer[51];
+		p[4] += buffer[52];	p[5] += buffer[53];	p[6] += buffer[54];	p[7] += buffer[55];
+		macro1();
+		p[0] += buffer[56];	p[1] += buffer[57];	p[2] += buffer[58];	p[3] += buffer[59];
+		p[4] += buffer[60];	p[5] += buffer[61];	p[6] += buffer[62];	p[7] += buffer[63];
+		macro2();
+		p[0] += buffer[64];	p[1] += buffer[65];	p[2] += buffer[66];	p[3] += buffer[67];
+		p[4] += buffer[68];	p[5] += buffer[69];	p[6] += buffer[70];	p[7] += buffer[71];
+		macro1();
+		p[0] += buffer[72];	p[1] += buffer[73];	p[2] += buffer[74];	p[3] += buffer[75];
+		p[4] += buffer[76];	p[5] += buffer[77];	p[6] += buffer[78];	p[7] += buffer[79];
+		macro2();
+		p[0] += buffer[80];	p[1] += buffer[81];	p[2] += buffer[82];	p[3] += buffer[83];
+		p[4] += buffer[84];	p[5] += buffer[85];	p[6] += buffer[86];	p[7] += buffer[87];
+		macro1();
+		p[0] += buffer[88];	p[1] += buffer[89];	p[2] += buffer[90];	p[3] += buffer[91];
+		p[4] += buffer[92];	p[5] += buffer[93];	p[6] += buffer[94];	p[7] += buffer[95];
+		macro2();
+		p[0] += buffer[96];	p[1] += buffer[97];	p[2] += buffer[98];	p[3] += buffer[99];
+		p[4] += buffer[100];	p[5] += buffer[101];	p[6] += buffer[102];	p[7] += buffer[103];
+		macro1();
+		p[0] += buffer[104];	p[1] += buffer[105];	p[2] += buffer[106];	p[3] += buffer[107];
+		p[4] += buffer[108];	p[5] += buffer[109];	p[6] += buffer[110];	p[7] += buffer[111];
+		macro2();
+		p[0] += make_uint2(0xA9D5C3F4, 0xEABE394C);	p[1] += make_uint2(0x1A75B523, 0x991112C7);
+		p[2] += make_uint2(0x660FCC33, 0xAE18A40B);	p[3] += make_uint2(0x98173EC4, 0xCAB2076D);
+		p[4] += make_uint2(0x749C51CE, 0x4903ADFF);	p[5] += make_uint2(0x9746DF43, 0xFD95DE39);
+		p[6] += make_uint2(0x27C79C0E, 0x8FD19341);	p[7] += make_uint2(0xFF352CBF, 0x9A255629);
+		macro1();
+		p[0] += make_uint2(0x1A75B523, 0x991112C7);	p[1] += make_uint2(0x660FCC33, 0xAE18A40B);
+		p[2] += make_uint2(0x98173EC4, 0xCAB2076D);	p[3] += make_uint2(0x749C51CE, 0x4903ADFF);
+		p[4] += make_uint2(0x9746DF03, 0x0D95DE39);	p[5] += make_uint2(0x27C79C0E, 0x8FD19341);
+		p[6] += make_uint2(0xFF352CB1, 0x8A255629);	p[7] += make_uint2(0xDF6CA7BF, 0x5DB62599);
+		macro2();
+		p[0] += vectorize(0xAE18A40B660FCC33);		p[1] += vectorize(0xcab2076d98173ec4);
+		p[2] += vectorize(0x4903ADFF749C51CE);		p[3] += vectorize(0x0D95DE399746DF03);
+		p[4] += vectorize(0x8FD1934127C79BCE);		p[5] += vectorize(0x8A255629FF352CB1);
+		p[6] += vectorize(0x4DB62599DF6CA7F0);		p[7] += vectorize(0xEABE394CA9D5C3F4 + 16);
+		macro1();
+		p[0] += vectorize(0xcab2076d98173ec4);		p[1] += vectorize(0x4903ADFF749C51CE);
+		p[2] += vectorize(0x0D95DE399746DF03);		p[3] += vectorize(0x8FD1934127C79BCE);
+		p[4] += vectorize(0x9A255629FF352CB1);		p[5] += vectorize(0x4DB62599DF6CA7F0);
+		p[6] += vectorize(0xEABE394CA9D5C3F4 + 0x0000000000000040);
+		p[7] += vectorize(0x991112C71A75B523 + 17);
+		macro2();
+		p[0] += vectorize(0x4903ADFF749C51CE);		p[1] += vectorize(0x0D95DE399746DF03);
+		p[2] += vectorize(0x8FD1934127C79BCE);		p[3] += vectorize(0x9A255629FF352CB1);
+		p[4] += vectorize(0x5DB62599DF6CA7B0);		p[5] += vectorize(0xEABE394CA9D5C3F4 + 0x0000000000000040);
+		p[6] += vectorize(0x891112C71A75B523);		p[7] += vectorize(0xAE18A40B660FCC33 + 18);
+
+#define h0 p[0]
+#define h1 p[1]
+#define h2 p[2]
+#define h3 p[3]
+#define h4 p[4]
+#define h5 p[5]
+#define h6 p[6]
+#define h7 p[7]
+
+		h0 ^= h[0];	h1 ^= h[1];	h2 ^= h[2];	h3 ^= h[3];
+		h4 ^= h[4];	h5 ^= h[5];	h6 ^= h[6];	h7 ^= h[7];
+
+		uint2 skein_h8 = h0 ^ h1 ^ h2 ^ h3 ^ h4 ^ h5 ^ h6 ^ h7 ^ vectorize(0x1BD11BDAA9FC1A22);
+
+		uint2 hash64[8];
+
+		hash64[5] = h5 + 8;
+
+		hash64[0] = h0 + h1;
+		hash64[1] = ROL2(h1, 46) ^ hash64[0];
+		hash64[2] = h2 + h3;
+		hash64[3] = ROL2(h3, 36) ^ hash64[2];
+		hash64[4] = h4 + hash64[5];
+		hash64[5] = ROL2(hash64[5], 19) ^ hash64[4];
+		hash64[6] = (h6 + h7 + make_uint2(0, 0xff000000));
+		hash64[7] = ROL2(h7, 37) ^ hash64[6];
+		hash64[2] += hash64[1];
+		hash64[1] = ROL2(hash64[1], 33) ^ hash64[2];
+		hash64[4] += hash64[7];
+		hash64[7] = ROL2(hash64[7], 27) ^ hash64[4];
+		hash64[6] += hash64[5];
+		hash64[5] = ROL2(hash64[5], 14) ^ hash64[6];
+		hash64[0] += hash64[3];
+		hash64[3] = ROL2(hash64[3], 42) ^ hash64[0];
+		hash64[4] += hash64[1];
+		hash64[1] = ROL2(hash64[1], 17) ^ hash64[4];
+		hash64[6] += hash64[3];
+		hash64[3] = ROL2(hash64[3], 49) ^ hash64[6];
+		hash64[0] += hash64[5];
+		hash64[5] = ROL2(hash64[5], 36) ^ hash64[0];
+		hash64[2] += hash64[7];
+		hash64[7] = ROL2(hash64[7], 39) ^ hash64[2];
+		hash64[6] += hash64[1];
+		hash64[1] = ROL2(hash64[1], 44) ^ hash64[6];
+		hash64[0] += hash64[7];
+		hash64[7] = ROL2(hash64[7], 9) ^ hash64[0];
+		hash64[2] += hash64[5];
+		hash64[5] = ROL2(hash64[5], 54) ^ hash64[2];
+		hash64[4] += hash64[3];
+		hash64[3] = ROR8(hash64[3]) ^ hash64[4];
+
+		hash64[0] += h1; hash64[1] += h2; hash64[2] += h3; hash64[3] += h4;
+		hash64[4] += h5;
+		hash64[5] += h6 + make_uint2(0, 0xff000000);
+		hash64[6] += h7 + vectorize(0xff00000000000008);
+		hash64[7] += skein_h8 + 1;
+		macro3();
+		hash64[0] += h2; hash64[1] += h3; hash64[2] += h4; hash64[3] += h5;
+		hash64[4] += h6;
+		hash64[5] += h7 + vectorize(0xff00000000000008);
+		hash64[6] += skein_h8 + 8;
+		hash64[7] += h0 + 2;
+		macro4();
+		hash64[0] = (hash64[0] + h3);			hash64[1] = (hash64[1] + h4);
+		hash64[2] = (hash64[2] + h5);			hash64[3] = (hash64[3] + h6);
+		hash64[4] = (hash64[4] + h7);			hash64[5] = (hash64[5] + skein_h8 + 8);
+		hash64[6] = (hash64[6] + h0 + make_uint2(0, 0xff000000));
+		hash64[7] = (hash64[7] + h1 + 3);
+		macro3();
+		hash64[0] = (hash64[0] + h4);			hash64[1] = (hash64[1] + h5);
+		hash64[2] = (hash64[2] + h6);			hash64[3] = (hash64[3] + h7);
+		hash64[4] = (hash64[4] + skein_h8);		hash64[5] = (hash64[5] + h0 + make_uint2(0, 0xff000000));
+		hash64[6] = (hash64[6] + h1 + vectorize(0xff00000000000008));
+		hash64[7] = (hash64[7] + h2 + 4);
+		macro4();
+		hash64[0] = (hash64[0] + h5);			hash64[1] = (hash64[1] + h6);
+		hash64[2] = (hash64[2] + h7);			hash64[3] = (hash64[3] + skein_h8);
+		hash64[4] = (hash64[4] + h0);			hash64[5] = (hash64[5] + h1 + vectorize(0xff00000000000008));
+		hash64[6] = (hash64[6] + h2 + 8);		hash64[7] = (hash64[7] + h3 + 5);
+		macro3();
+		hash64[0] = (hash64[0] + h6);			hash64[1] = (hash64[1] + h7);
+		hash64[2] = (hash64[2] + skein_h8);		hash64[3] = (hash64[3] + h0);
+		hash64[4] = (hash64[4] + h1);			hash64[5] = (hash64[5] + h2 + 8);
+		hash64[6] = (hash64[6] + h3 + make_uint2(0, 0xff000000));
+		hash64[7] = (hash64[7] + h4 + 6);
+		macro4();
+		hash64[0] = (hash64[0] + h7);			hash64[1] = (hash64[1] + skein_h8);
+		hash64[2] = (hash64[2] + h0);			hash64[3] = (hash64[3] + h1);
+		hash64[4] = (hash64[4] + h2);			hash64[5] = (hash64[5] + h3 + make_uint2(0, 0xff000000));
+		hash64[6] = (hash64[6] + h4 + vectorize(0xff00000000000008));
+		hash64[7] = (hash64[7] + h5 + 7);
+		macro3();
+		hash64[0] = (hash64[0] + skein_h8);		hash64[1] = (hash64[1] + h0);
+		hash64[2] = (hash64[2] + h1);			hash64[3] = (hash64[3] + h2);
+		hash64[4] = (hash64[4] + h3);			hash64[5] = (hash64[5] + h4 + vectorize(0xff00000000000008));
+		hash64[6] = (hash64[6] + h5 + 8);		hash64[7] = (hash64[7] + h6 + 8);
+		macro4();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h0));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h1));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h2));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h3));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h4));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h5) + 8);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h6) + 0xff00000000000000);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h7) + 9);
+		macro3();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h1));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h2));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h3));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h4));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h5));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h6) + 0xff00000000000000);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h7) + 0xff00000000000008);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(skein_h8) + 10);
+		macro4();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h2));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h3));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h4));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h5));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h6));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h7) + 0xff00000000000008);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(skein_h8) + 8);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h0) + 11);
+		macro3();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h3));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h4));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h5));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h6));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h7));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(skein_h8) + 8);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h0) + 0xff00000000000000);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h1) + 12);
+		macro4();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h4));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h5));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h6));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h7));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(skein_h8));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h0) + 0xff00000000000000);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h1) + 0xff00000000000008);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h2) + 13);
+		macro3();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h5));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h6));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h7));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(skein_h8));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h0));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h1) + 0xff00000000000008);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h2) + 8);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h3) + 14);
+		macro4();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h6));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h7));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(skein_h8));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h0));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h1));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h2) + 8);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h3) + 0xff00000000000000);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h4) + 15);
+		macro3();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h7));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(skein_h8));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h0));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h1));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h2));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h3) + 0xff00000000000000);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h4) + 0xff00000000000008);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h5) + 16);
+		macro4();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(skein_h8));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h0));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h1));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h2));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h3));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h4) + 0xff00000000000008);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h5) + 8);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h6) + 17);
+		macro3();
+		hash64[0] = vectorize(devectorize(hash64[0]) + devectorize(h0));
+		hash64[1] = vectorize(devectorize(hash64[1]) + devectorize(h1));
+		hash64[2] = vectorize(devectorize(hash64[2]) + devectorize(h2));
+		hash64[3] = vectorize(devectorize(hash64[3]) + devectorize(h3));
+		hash64[4] = vectorize(devectorize(hash64[4]) + devectorize(h4));
+		hash64[5] = vectorize(devectorize(hash64[5]) + devectorize(h5) + 8);
+		hash64[6] = vectorize(devectorize(hash64[6]) + devectorize(h6) + 0xff00000000000000);
+		hash64[7] = vectorize(devectorize(hash64[7]) + devectorize(h7) + 18);
+
+//		phash = (uint2x4*)hash64;
+//		uint2x4 *outpt = (uint2x4*)Hash;
+//		outpt[0] = phash[0];
+//		outpt[1] = phash[1];
+
+#undef h0
+#undef h1
+#undef h2
+#undef h3
+#undef h4
+#undef h5
+#undef h6
+#undef h7
+
+		if (devectorize(hash64[3]) <= target)
+		{
+			const uint32_t tmp = atomicExch(&resNonce[0], hashPosition);
+			if (tmp != UINT32_MAX)
+				resNonce[1] = tmp;
+		}
+	}
+}
+
+
 __host__
 //void quark_skein512_cpu_hash_64(int thr_id,uint32_t threads, uint32_t *d_nonceVector, uint32_t *d_hash)
 void quark_skein512_cpu_hash_64(int thr_id, const uint32_t threads, const uint32_t startNonce, uint32_t *d_nonceVector, uint32_t *d_hash, int order)
@@ -767,6 +1068,20 @@ void quark_skein512_cpu_hash_64(int thr_id, const uint32_t threads, const uint32
 	quark_skein512_gpu_hash_64 <<<grid, block >>>(threads, startNonce, (uint64_t*)d_hash, d_nonceVector);
 
 }
+
+__host__
+void quark_skein512_cpu_hash_64_final(int thr_id, uint32_t threads, uint32_t *d_hash, uint64_t target, uint32_t *d_resNonce)
+{
+	uint32_t tpb = TPB52;
+	int dev_id = device_map[thr_id];
+
+	if (device_sm[dev_id] <= 500) tpb = TPB50;
+	const dim3 grid((threads + tpb - 1) / tpb);
+	const dim3 block(tpb);
+	quark_skein512_gpu_hash_64_final << <grid, block >> >(threads, (uint64_t*)d_hash, d_resNonce, target);
+}
+
+
 
 // 120 * 8 = 960 ... too big ?
 static __constant__ uint2 c_buffer[120]; // padded message (80 bytes + 72*8 bytes midstate + align)

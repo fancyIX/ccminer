@@ -26,7 +26,7 @@ extern void skein256_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNon
 extern void skein256_cpu_init(int thr_id, uint32_t threads);
 
 extern void lyra2_cpu_init(int thr_id, uint32_t threads, uint64_t *d_matrix);
-extern void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint32_t startNonce, uint64_t *d_outputHash, bool gtx750ti, uint32_t high_end);
+extern void lyra2_cpu_hash_32(int thr_id, uint32_t threads, uint64_t *d_outputHash, bool gtx750ti);
 
 extern void groestl256_cpu_init(int thr_id, uint32_t threads);
 extern void groestl256_cpu_free(int thr_id);
@@ -80,7 +80,6 @@ extern "C" int scanhash_lyra2(int thr_id, struct work* work, uint32_t max_nonce,
 		ptarget[7] = 0x00ff;
 
 	static __thread bool gtx750ti;
-	static __thread uint32_t high_end;
 	if (!init[thr_id])
 	{
 		int dev_id = device_map[thr_id];
@@ -97,9 +96,6 @@ extern "C" int scanhash_lyra2(int thr_id, struct work* work, uint32_t max_nonce,
 
 		if (strstr(props.name, "750 Ti")) gtx750ti = true;
 		else gtx750ti = false;
-
-		if (strstr(props.name, "1080")) high_end = true;
-		else high_end = false;
 
 		gpulog(LOG_INFO, thr_id, "Intensity set to %g, %u cuda threads", throughput2intensity(throughput), throughput);
 
@@ -134,7 +130,7 @@ extern "C" int scanhash_lyra2(int thr_id, struct work* work, uint32_t max_nonce,
 		//blake256_cpu_hash_80(thr_id, throughput, pdata[19], d_hash[thr_id], order++);
 		//keccak256_sm3_hash_32(thr_id, throughput, pdata[19], d_hash[thr_id], order++);
 		blakeKeccak256_cpu_hash_80(thr_id, throughput, pdata[19], d_hash[thr_id], order++);
-		lyra2_cpu_hash_32(thr_id, throughput, pdata[19], d_hash[thr_id], gtx750ti, high_end);
+		lyra2_cpu_hash_32(thr_id, throughput, d_hash[thr_id], gtx750ti);
 		skein256_cpu_hash_32(thr_id, throughput, pdata[19], d_hash[thr_id], order++);
 
 		*hashes_done = pdata[19] - first_nonce + throughput;

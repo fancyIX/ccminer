@@ -326,10 +326,10 @@ void x17_haval256_gpu_hash_64(const uint32_t threads, uint64_t *g_hash, const in
 		pHash[3] = hash.h8[3];
 
 		if (outlen == 512) {
-			pHash[4] = 0; //hash.h8[4];
-			pHash[5] = 0; //hash.h8[5];
-			pHash[6] = 0; //hash.h8[6];
-			pHash[7] = 0; //hash.h8[7];
+			pHash[4] = hash.h8[4];
+			pHash[5] = hash.h8[5];
+			pHash[6] = hash.h8[6];
+			pHash[7] = hash.h8[7];
 		}
 	}
 }
